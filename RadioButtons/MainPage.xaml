@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RadioButtons.MainPage">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30,0" Spacing="10">
+
+            <!-- OFFLINE -->
+            <Label Text="Conversor de Moedas Offline" HorizontalOptions="Center" FontSize="Large" VerticalOptions="Start" />
+            <Label Text="Digite o valor em R$:"/>
+            <Entry x:Name="txValor" Text="1"/>
+
+            <Label Text="Escolha a moeda para conversão:"/>
+            <RadioButton Content="Dolar" GroupName="Moedas" CheckedChanged="RadioButton_CheckedChanged"/>
+            <RadioButton Content="Euro" GroupName="Moedas" CheckedChanged="RadioButton_CheckedChanged"/>
+            <RadioButton Content="Pesos" GroupName="Moedas" CheckedChanged="RadioButton_CheckedChanged"/>
+
+            <Label Text="Valor Convertido!"/>
+
+            <Entry x:Name="txValorConvertido" Text="" IsEnabled="False"/>
+
+
+            <!--ONLINE-->
+            <Label Text="Conversor de Moedas On-line" HorizontalOptions="Center" VerticalOptions="Start" FontSize="Large"/>
+            <Picker x:Name="pickFrom" Title="Escolha a moeda de origem" SelectedIndexChanged="OnPicker_SelectedIndexChanged">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>BRL</x:String>
+                        <x:String>USD</x:String>
+                        <x:String>EUR</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+            <Picker x:Name="pickTo" Title="Escolha a moeda de destino" SelectedIndexChanged="OnPicker_SelectedIndexChanged">
+                <Picker.ItemsSource>
+                    <x:Array Type="{x:Type x:String}">
+                        <x:String>BRL</x:String>
+                        <x:String>USD</x:String>
+                        <x:String>EUR</x:String>
+                    </x:Array>
+                </Picker.ItemsSource>
+            </Picker>
+
+
+            <Button x:Name="btConverterPicker" Text="Converter pelo Picker..." Clicked="btConverterPicker_Clicked"/>
+            <Label x:Name="lbResultado" FontAttributes="Bold" TextColor="Red"/>
+        </VerticalStackLayout>
+
+    </ScrollView>
+</ContentPage>
