@@ -39,6 +39,12 @@
 
         private void btConverterPicker_Clicked(object sender, EventArgs e)
         {
+            if (!currencyConverter.RatesLoaded)
+            {
+                lbResultado.Text = "Cotações indisponíveis. Abra o app com internet ao menos uma vez.";
+                return;
+            }
+
             string fromCurrency = pickFrom.SelectedItem as string;
             string toCurrency = pickTo.SelectedItem as string;
             

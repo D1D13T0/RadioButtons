@@ -28,6 +28,7 @@ namespace RadioButtons
         public CurrencyConverter()
         {
             _httpClient = new HttpClient();
+            _httpClient.Timeout = TimeSpan.FromSeconds(10);
 
             GetAllCurrencyRates();
         }
@@ -53,9 +54,24 @@ namespace RadioButtons
 
         private async void GetAllCurrencyRates()
         {
-            ratesUSD = await GetRatesAsync("USD");
-            ratesBRL = await GetRatesAsync("BRL");
-            ratesEUR = await GetRatesAsync("EUR");
+            try
+            {
+                // ONLINE: busca as cotações na API e salva uma cópia no dispositivo
+                ratesUSD = await GetRatesAsync("USD");
+                ratesBRL = await GetRatesAsync("BRL");
+                ratesEUR = await GetRatesAsync("EUR");
+
+                SaveRates(ratesUSD);
+                SaveRates(ratesBRL);
+                SaveRates(ratesEUR);
+            }
+            catch (Exception)
+            {
+                // OFFLINE: usa as cotações salvas na última vez em que o app esteve online
+                ratesUSD = ReadRates("USD");
+                ratesBRL = ReadRates("BRL");
+                ratesEUR = ReadRates("EUR");
+            }
         }
 
         public decimal ConvertValue(decimal amount, string from, string to)
@@ -65,23 +81,47 @@ namespace RadioButtons
             else if (from == "USD" && to == "EUR") 
                 return amount * ratesUSD.rates["EUR"];
             else if (from == "BRL" && to == "EUR")
-                return amount * ratesUSD.rates["EUR"];
+                return amount * ratesBRL.rates["EUR"];
             else if (from == "BRL" && to == "USD")
-                return amount * ratesUSD.rates["EUR"];
+                return amount * ratesBRL.rates["USD"];
             else if (from == "EUR" && to == "USD")
-                return amount * ratesUSD.rates["EUR"];
+                return amount * ratesEUR.rates["USD"];
             else if (from == "EUR" && to == "BRL")
-                return amount * ratesUSD.rates["EUR"];
+                return amount * ratesEUR.rates["BRL"];
             else 
                 return amount;
 
         }
 
+        // Indica se as cotações já foram carregadas (da internet ou dos arquivos)
+        public bool RatesLoaded => ratesUSD != null && ratesBRL != null && ratesEUR != null;
 
-        // Criar um método para salvar e outro para ler
-        // todos os dados das cotações em  
-        // arquivos no dispositivo no formato da string JSON
+        // Caminho do arquivo JSON de uma moeda, na pasta de dados do app
+        private string GetFilePath(string baseCurrency)
+        {
+            return Path.Combine(FileSystem.AppDataDirectory, $"rates_{baseCurrency}.json");
+        }
 
+        // Salva todos os dados de uma cotação em um arquivo no dispositivo, como string JSON
+        public void SaveRates(CurrencyRates rates)
+        {
+            string jsonString = JsonSerializer.Serialize(rates);
 
+            File.WriteAllText(GetFilePath(rates.base_code), jsonString);
+        }
+
+        // Lê todos os dados de uma cotação do arquivo JSON salvo no dispositivo
+        // Retorna null se ainda não existir arquivo salvo para a moeda
+        public CurrencyRates ReadRates(string baseCurrency)
+        {
+            string filePath = GetFilePath(baseCurrency);
+
+            if (!File.Exists(filePath))
+                return null;
+
+            string jsonString = File.ReadAllText(filePath);
+
+            return JsonSerializer.Deserialize<CurrencyRates>(jsonString);
+        }
     }
 }
